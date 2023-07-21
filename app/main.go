@@ -16,9 +16,6 @@ import (
 	"github.com/olahol/go-imageupload"
 )
 
-//1.  Create dynamic rendering of templates
-
-//2. Implement delete and download.
 
 
 
@@ -222,6 +219,18 @@ func populateImageDataJSON() error {
 func main() {
 	r := gin.Default()
 
+	// Check if the "pictures" folder exists; if not, create it
+	if _, err := os.Stat(DOWNLOADS_PATH); os.IsNotExist(err) {
+		fmt.Println("Pictures folder not found, creating...")
+		err = os.Mkdir(DOWNLOADS_PATH, 0755)
+		if err != nil {
+			fmt.Println("Failed to create pictures folder:", err)
+			return
+		}
+		fmt.Println("Pictures folder created.")
+	}
+
+	
 	// Populate the imageData.json file with current images
 	err := populateImageDataJSON()
 	if err != nil {
