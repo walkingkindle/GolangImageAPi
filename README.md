@@ -29,25 +29,7 @@ Dodatno (nije obavezno):
     * kako bi obradio velike fajlove od po 1-2GB?
 Odgovor: Pretvorio bi fail-ove u manje chunk-ove ili koristio multipart/form-data kao html upload ulaz.
 Ako bi pretvorio u manje chunk-ove ovako bi otprilike izgledao moj kod:
-	buf := make([]byte, 4*1024) // 4KB buffer size
-	for {
-		n, err := file.Read(buf)
-		if err != nil {
-			if err != io.EOF {
-				fmt.Println("Error reading file:", err)
-			}
-			break
-		}
-		_, err = out.Write(buf[:n])
-		if err != nil {
-			fmt.Println("Error writing file:", err)
-			break
-		}
-	}
-
-	c.JSON(http.StatusOK, gin.H{"message": "File uploaded successfully"})
-}
-
+(https://pastebin.com/sDZyzBur)
     * koji su potencijalni izazovi ovakvog mikroservisa u cilju skaliranja?
 
 Odgovor:
