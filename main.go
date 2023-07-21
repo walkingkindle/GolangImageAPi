@@ -3,16 +3,17 @@ package main
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"mime"
 	"net/http"
 	"os"
 	"path/filepath"
-     "encoding/json"
+	"sort"
+
 	"github.com/gin-gonic/gin"
 	"github.com/olahol/go-imageupload"
-	"mime"
-	"sort"
 )
 
 //1.  Create dynamic rendering of templates
@@ -27,7 +28,6 @@ var Imagemap = make(map[string]string)
 type ImageData struct {
 	Hash     string `json:"hash"`
 	FileName string `json:"fileName"`
-	Extension string `json:"extension"`
 }
 const DOWNLOADS_PATH = "pictures/"
 
@@ -76,9 +76,9 @@ func loadImageDataFromJSON() error {
 }
 
 //AddNewImage adds the image to the pictures folder
-func AddNewImage(title string, imgName string) {
-	Imagemap[title] = imgName
-	fmt.Println("New Image Added:", title, imgName)
+func AddNewImage(key string, value string) {
+	Imagemap[key] = value 
+	fmt.Println("New Image Added:", key, value)
 
 	// Save the updated image data to JSON
 	err := saveImageDataToJSON(Imagemap)
@@ -95,19 +95,18 @@ func DeleteImage(Imagemap map[string]string, hash string) error {
 	fileName := Imagemap[hash] 
 	fmt.Println("Deleting image with hash:", hash)
 	fmt.Println("Corresponding file name:", fileName)
-
-	// Concatenate the file extension to the hash to get the correct key
-	ext := filepath.Ext(fileName)
-
+     
+	fmt.Println("Hashmap before deleting the file,",Imagemap)
 	// Remove the hash from the imagemap using the correct key
 	delete(Imagemap, hash)
-
+	fmt.Println("ext is")
+	fmt.Println("Hashmap after deleting the file,",Imagemap)
 	// Get the file extension from the file name
 
 	// Delete the corresponding image file from the folder
 	folderPath := "pictures"
-	filePath := filepath.Join(folderPath, hash+ext)
-	if err := os.Remove(filePath); err != nil {
+	filePathh := filepath.Join(folderPath, hash)
+	if err := os.Remove(filePathh); err != nil {
 		return err
 	}
 
@@ -167,13 +166,12 @@ func saveImageToFolder(img *imageupload.Image, filename string) (*ImageData, err
 	}
 
 	// Extract the file extension
-	ext := filepath.Ext(filename)
+	//ext := filepath.Ext(filename)
 
 	// Create and return the ImageData struct
 	imageData := &ImageData{
 		Hash:      filename,
 		FileName:  filename,
-		Extension: ext,
 	}
 
 	return imageData, nil
@@ -282,12 +280,12 @@ func main() {
 	
 		if !imageExists {
 			// Image does not exist, upload it and add the hash to the hashmap
-			imageData, err := saveImageToFolder(img, hash+".jpg")
+			imageData, err := saveImageToFolder(img, hash)
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save image"})
 				return
 			}
-			AddNewImage(hash, hash+".jpg")
+			AddNewImage(hash, hash)
 	
 			// Save the updated image data with extension to JSON
 			err = saveImageDataToJSON(Imagemap)
@@ -331,10 +329,10 @@ func main() {
 
 	r.GET("/download-user-file/:filename", func(ctx *gin.Context) {
 		fileName := ctx.Param("filename")
-		targetPath := filepath.Join(DOWNLOADS_PATH, fileName)
+		ext := filepath.Ext(fileName)
+		targetPath := filepath.Join(DOWNLOADS_PATH, fileName + ext)
 	
 		// Set the appropriate Content-Type based on the file extension
-		ext := filepath.Ext(fileName)
 		contentType := mime.TypeByExtension(ext)
 		if contentType == "" {
 			// If the Content-Type is unknown, set a default value for binary data
