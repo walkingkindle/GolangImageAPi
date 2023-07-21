@@ -22,8 +22,8 @@ Dodatno (nije obavezno):
 
 
 ------------------------------------------------------------------------------------------------------------------------
-1. Pokrenuti Goimgapi.exe
-2. go run main.go
+1. go run main.go
+2. uci na localhost:8080
 
 
     * kako bi obradio velike fajlove od po 1-2GB?
